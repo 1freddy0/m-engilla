@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Engilla</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --placeholder-color: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .container {
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2.5em;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin: 10px;
+            min-height: 44px;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #countdown {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        #subscription-info {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            background-color: var(--placeholder-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-placeholder::before {
+            content: "Engine Oil";
+            color: var(--text-color);
+            font-size: 1.2em;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            p {
+                font-size: 1em;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 1em;
+            }
+        }
+
+        @media screen and (max-width: 400px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            p {
+                font-size: 0.9em;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Engilla</h1>
+        <p>Your ultimate car engine oil recommendation app.</p>
+        <div class="image-placeholder">
+            <img src="{{ url_for('static', filename='images/engine_oil_image.jpeg') }}" alt="Engine Oil">
+        </div>
+        <div>
+            <button onclick="startFreeTrial()">Start 3-Day Free Trial</button>
+            <button onclick="showSubscriptionInfo()">Subscribe</button>
+        </div>
+        <div id="countdown"></div>
+        <div id="subscription-info" style="display:none;">
+            <h2>Subscribe to Engilla</h2>
+            <p>Choose your subscription plan:</p>
+            <button onclick="subscribe('monthly')">Monthly Plan - $9.99</button>
+            <button onclick="subscribe('yearly')">Yearly Plan - $99.99</button>
+        </div>
+    </div>
+
+    <script>
+        function startFreeTrial() {
+            const trialStartDate = localStorage.getItem('trialStartDate');
+            if (trialStartDate) {
+                const trialEndDate = new Date(parseInt(trialStartDate) + 3 * 24 * 60 * 60 * 1000);
+                if (new Date() < trialEndDate) {
+                    alert("You're already in a trial. Redirecting to the main page.");
+                    window.location.href = '/index';
+                    return;
+                }
+            }
+            
+            localStorage.setItem('trialStartDate', Date.now().toString());
+            alert("Your 3-day free trial has started!");
+            window.location.href = '/index';
+        }
+
+        function updateCountdown() {
+            const trialStartDate = localStorage.getItem('trialStartDate');
+            if (trialStartDate) {
+                const now = new Date();
+                const trialEndDate = new Date(parseInt(trialStartDate) + 3 * 24 * 60 * 60 * 1000);
+                const timeLeft = trialEndDate - now;
+                if (timeLeft > 0) {
+                    const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    document.getElementById('countdown').innerText = `${daysLeft} days and ${hoursLeft} hours left in your free trial`;
+                } else {
+                    document.getElementById('countdown').innerText = 'Your free trial has expired';
+                    localStorage.removeItem('trialStartDate');
+                }
+            }
+        }
+
+        function showSubscriptionInfo() {
+            document.getElementById('subscription-info').style.display = 'block';
+        }
+
+        function subscribe(plan) {
+            let amount;
+            if (plan === 'monthly') {
+                amount = 9.99;
+            } else if (plan === 'yearly') {
+                amount = 99.99;
+            } else {
+                alert('Invalid plan selected');
+                return;
+            }
+
+            FlutterwaveCheckout({
+                public_key: "FLWPUBK_TEST-c5c780dcd405179b0e3d796fea52e906-X",
+                tx_ref: "Engilla_" + Date.now(),
+                amount: amount,
+                currency: "USD",
+                payment_options: "card,mobilemoney,ussd",
+                redirect_url: "https://your-redirect-url.com/callback",
+                meta: {
+                    consumer_id: 23,
+                    consumer_mac: "92a3-912ba-1192a",
+                },
+                customer: {
+                    email: "user@example.com",
+                    phone_number: "08102909304",
+                    name: "John Doe",
+                },
+                callback: function (data) {
+                    console.log(data);
+                    if (data.status === "successful") {
+                        alert(`Thank you for subscribing to the ${plan} plan!`);
+                        localStorage.setItem('subscribed', 'true');
+                        localStorage.removeItem('trialStartDate');
+                        window.location.href = '/index';
+                    } else {
+                        alert("Payment was not successful. Please try again.");
+                    }
+                },
+                onclose: function() {
+                    // close modal
+                },
+                customizations: {
+                    title: "Engilla Subscription",
+                    description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan Subscription`,
+                    logo: "https://assets.piedpiper.com/logo.png",
+                },
+            });
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000 * 60); // Update every minute
+    </script>
+</body>
+</html>
